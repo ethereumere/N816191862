@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search</title>
+
+<style>
+
+body{
+    background:black;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+    padding:20px;
+    text-align:center;
+}
+
+.logo{
+    width:120px;
+    margin-bottom:20px;
+}
+
+input{
+    width:90%;
+    max-width:500px;
+    padding:15px;
+    background:black;
+    color:white;
+    border:1px solid white;
+    font-size:18px;
+    outline:none;
+}
+
+button{
+    margin-top:20px;
+    padding:15px;
+    width:250px;
+    background:black;
+    color:white;
+    border:1px solid white;
+    font-size:18px;
+}
+
+button:hover{
+    background:white;
+    color:black;
+}
+
+#loginPage{
+    margin-top:120px;
+}
+
+#searchPage{
+    display:none;
+    margin-top:60px;
+}
+
+#result{
+    margin-top:30px;
+    border:1px solid white;
+    padding:20px;
+    text-align:left;
+    white-space:pre-wrap;
+    word-break:break-word;
+    min-height:100px;
+}
+
+#error{
+    color:red;
+    margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginPage">
+
+    <img src="logo2.png" class="logo">
+
+    <h1>Write Your Key Here son</h1>
+
+    <input
+        type="password"
+        id="keyInput"
+        placeholder="netanyahu123#..."
+    >
+
+    <br>
+
+    <button onclick="checkKey()">
+        ENTER
+    </button>
+
+    <div id="error"></div>
+
+</div>
+
+<!-- SEARCH -->
+
+<div id="searchPage">
+
+    <h1>Search</h1>
+
+    <input
+        type="text"
+        id="queryInput"
+        placeholder="Query..."
+    >
+
+    <br>
+
+    <button onclick="searchAPI()">
+        Search
+    </button>
+
+    <div id="result">
+Result...
+    </div>
+
+</div>
+
+<script>
+
+/* CHECK KEY */
+
+async function checkKey(){
+
+    const key =
+    document.getElementById("keyInput").value;
+
+    document.getElementById("error").innerText = "";
+
+    try{
+
+        const response = await fetch("/api/check",{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                key:key
+            })
+
+        });
+
+        const data =
+        await response.json();
+
+        if(data.success){
+
+            localStorage.setItem("access","true");
+
+            document.getElementById("loginPage").style.display =
+            "none";
+
+            document.getElementById("searchPage").style.display =
+            "block";
+
+        }else{
+
+            document.getElementById("error").innerText =
+            "Invalid key.";
+
+        }
+
+    }catch(error){
+
+        document.getElementById("error").innerText =
+        "Server error.";
+
+    }
+
+}
+
+/* AUTO LOGIN */
+
+if(localStorage.getItem("access") === "true"){
+
+    document.addEventListener("DOMContentLoaded",()=>{
+
+        document.getElementById("loginPage").style.display =
+        "none";
+
+        document.getElementById("searchPage").style.display =
+        "block";
+
+    });
+
+}
+
+/* SEARCH API */
+
+async function searchAPI(){
+
+    const query =
+    document.getElementById("queryInput").value;
+
+    if(!query){
+        return;
+    }
+
+    document.getElementById("result").innerText =
+    "Loading...";
+
+    try{
+
+        const response = await fetch("/api/search",{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                query:query
+            })
+
+        });
+
+        const data =
+        await response.json();
+
+        document.getElementById("result").innerText =
+        JSON.stringify(data,null,2);
+
+    }catch(error){
+
+        document.getElementById("result").innerText =
+        "Error : " + error;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
